@@ -95,6 +95,78 @@ void UKF::ProcessMeasurement(MeasurementPackage meas_package) {
    * TODO: Complete this function! Make sure you switch between lidar and radar
    * measurements.
    */
+ /*****************************************************************************
+   *  Initialization
+   ****************************************************************************/
+  if (!is_initialized_) {
+    /**
+    TODO:
+      * Initialize the state ekf_.x_ with the first measurement.
+      * Create the covariance matrix.
+      *  conversion radar from polar to cartesian coordinates.
+    */
+    // first measurement
+    std::cout << "UKF: " << std::endl;
+    x_ << 1, 1, 0, 0, 0;
+
+    if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+      /**
+      Convert radar from polar to cartesian coordinates and initialize state.
+      */
+      float rho = meas_package.raw_measurements_(0);
+      float phi = meas_package.raw_measurements_(1);
+      //float ro_dot = meas_package.raw_measurements_(2);
+
+      x_[0] = rho * cos(phi);
+      x_[1] = rho *sin(phi);
+      //x_[2] = ro_dot * cos(phi);
+      //x_[3] = ro_dot * sin(phi);
+    }
+    else if (meas_package.sensor_type_ == MeasurementPackage::LASER) {
+      /**
+      Initialize state.
+      */
+      x_ << meas_package.raw_measurements_(0), meas_package.raw_measurements_(1), 0, 0, 0;
+    }
+				
+    time_us_ = meas_package.timestamp_;
+    // done initializing, no need to predict or update
+    is_initialized_ = true;
+    return;
+  }
+
+  /*****************************************************************************
+   *  Prediction
+   ****************************************************************************/
+  float dt = (meas_package.timestamp_-time_us_) / 1000000.0;
+  time_us_ = meas_package.timestamp_;
+
+  float dt_2 = dt * dt;
+  float dt_3 = dt_2*dt;
+  float dt_4 = dt_3 * dt;
+
+  Prediction(dt);
+
+  /*****************************************************************************
+   *  Update
+   ****************************************************************************/
+
+  /**
+     * Using the sensor type to perform the update step.
+     * Update the state and covariance matrices.
+   */
+
+  if (meas_package.sensor_type_ == MeasurementPackage::RADAR) {
+    // Radar updates
+		UpdateRadar(meas_package);
+	} else {
+    UpdateLidar(meas_package);
+  }
+  
+  // print the output
+  cout << "x_ = " << x_ << endl;
+	cout << "P_ = " << P_ << endl;  
+	
 }
 
 void UKF::Prediction(double delta_t) {
