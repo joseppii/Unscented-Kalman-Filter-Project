@@ -1,7 +1,19 @@
+[//]: # (Image References)
+
+[image1]: ./images/final_rmse.png "Final RMSE for first dataset"
+
 # Unscented Kalman Filter Project Starter Code
 Self-Driving Car Engineer Nanodegree Program
 
 In this project utilize an Unscented Kalman Filter to estimate the state of a moving object of interest with noisy lidar and radar measurements. Passing the project requires obtaining RMSE values that are lower that the tolerance outlined in the project rubric. 
+
+## Implementation & Parameter tuning
+
+The implementation of `UKF::Prediction()` and `UKF::UpdateRadar()` methods was based on the code found in the unscented kalman filter quizes, while methods `UKF::UpdateLidar` and `UKF::ProcessMeasurement()` are based on code found in the extended kalman filter quizes. The initial values for the process noise standard deviation longitudional and yaw acceleration where set to an initial value that was not reasonable (30). We started testing the code by setting this value to 3, as suggested in the parameters and consistency section. By trial and error, the final values, that produced the best RMSE estimates where 1.5  and 7. The final RMSE can be seen in the figure below.
+
+![alt text][image1]
+
+The initial value for the radar NIS starts with a big value. Updating the initial P matrix fixes this issue. 
 
 This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases).
 
