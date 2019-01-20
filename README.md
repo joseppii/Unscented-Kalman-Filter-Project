@@ -13,7 +13,7 @@ The implementation of `UKF::Prediction()` and `UKF::UpdateRadar()` methods was b
 
 ![alt text][image1]
 
-The initial value for the radar NIS starts with a big value. Updating the initial P matrix fixes this issue. 
+The initial value for the radar NIS starts with a big value. Updating the initial P matrix fixes this issue. The NIS values for the initial and final P matrix values can be found in the data folder.
 
 This project involves the Term 2 Simulator which can be downloaded [here](https://github.com/udacity/self-driving-car-sim/releases).
 
