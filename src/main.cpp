@@ -1,14 +1,14 @@
 #include <math.h>
 #include <uWS/uWS.h>
 #include <iostream>
+#include <fstream>
 #include "json.hpp"
 #include "ukf.h"
 #include "tools.h"
 
 using Eigen::MatrixXd;
 using Eigen::VectorXd;
-using std::string;
-using std::vector;
+using namespace std;
 
 // for convenience
 using json = nlohmann::json;
@@ -29,7 +29,9 @@ string hasData(string s) {
   return "";
 }
 
-int main() {
+ofstream nis_data;
+
+int main(int argc, char** argv) {
   uWS::Hub h;
 
   // Create a Kalman Filter instance
@@ -40,6 +42,12 @@ int main() {
   vector<VectorXd> estimations;
   vector<VectorXd> ground_truth;
 
+	if (argc > 1) {
+			nis_data.open(argv[1], ofstream::out);
+			
+		
+	}
+	
   h.onMessage([&ukf,&tools,&estimations,&ground_truth]
               (uWS::WebSocket<uWS::SERVER> ws, char *data, size_t length, 
                uWS::OpCode opCode) {
@@ -131,7 +139,14 @@ int main() {
           estimations.push_back(estimate);
 
           VectorXd RMSE = tools.CalculateRMSE(estimations, ground_truth);
-
+					double nis = ukf.GetNIS();
+									
+					if (nis_data.is_open())
+						if (meas_package.sensor_type_==  MeasurementPackage::LASER)
+							nis_data << "Laser," <<  nis << endl;
+						else
+							nis_data << "Radar," <<  nis << endl;
+													
           json msgJson;
           msgJson["estimate_x"] = p_x;
           msgJson["estimate_y"] = p_y;
@@ -160,6 +175,9 @@ int main() {
   h.onDisconnection([&h](uWS::WebSocket<uWS::SERVER> ws, int code, 
                          char *message, size_t length) {
     ws.close();
+    if (nis_data.is_open())
+			nis_data.close();
+			
     std::cout << "Disconnected" << std::endl;
   });
 
